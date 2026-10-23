@@ -31,7 +31,8 @@ def test_triage_shape_and_dtypes():
     t = triage(df)
     assert t["n_rows"] == 5 and t["n_cols"] == 3
     assert t["dtypes"]["amount"] == "float64"
-    assert t["dtypes"]["order_id"] == "object"
+    # pandas 2.x reports "object" for strings, pandas 3.x reports "str"
+    assert t["dtypes"]["order_id"] in ("object", "str")
 
 
 def test_triage_non_null_counts():
@@ -102,7 +103,8 @@ def test_find_outliers_ignores_nulls():
 # --- Problem 5: schema gate ---
 def test_validate_schema_passes():
     df = make_frame()
-    validate_schema(df, {"order_id": "object", "amount": "float64"})
+    # use the frame's actual string dtype (pandas 2.x: "object", 3.x: "str")
+    validate_schema(df, {"order_id": str(df["order_id"].dtype), "amount": "float64"})
 
 
 def test_validate_schema_catches_dtype_drift():
